@@ -4,13 +4,14 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 7676:8000
+      - "7676:8000"
     restart: unless-stopped
     environment:
       DATABASE_URL: "postgres://postgres:postgres@db:5432/horilla"
-    command: sh ./entrypoint.sh
+    working_dir: /app              # Setzt das Arbeitsverzeichnis im Container
+    command: gunicorn horilla.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - ./horilla:/app/horilla
+      - ./horilla:/app/horilla     # bindet deinen Code-Ordner
     depends_on:
       db:
         condition: service_healthy
@@ -24,7 +25,7 @@ services:
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - 5432:5432
+      - "5432:5432"
     restart: unless-stopped
     volumes:
       - horilla-data:/var/lib/postgresql/data
